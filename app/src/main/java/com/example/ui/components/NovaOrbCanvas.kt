@@ -2,26 +2,16 @@ package com.example.ui.components
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import com.example.data.AssistantState
 import com.example.ui.theme.*
 import kotlin.math.*
-
-private class OrbParticle(
-    val theta: Float, // Azimuth angle
-    val phi: Float,   // Polar angle
-    val radiusRatio: Float,
-    val baseSize: Float,
-    val speedFactor: Float
-)
 
 @Composable
 fun NovaOrbCanvas(
@@ -36,308 +26,249 @@ fun NovaOrbCanvas(
         3 -> EmeraldGlow
         else -> NeonCyan
     }
-    val secondaryColor = when (glowThemeIndex) {
-        1 -> DeepViolet
-        2 -> AmberGlow
-        3 -> CyanGlow
-        else -> ElectricPurple
-    }
 
-    // Continuous rotation for HUD rings and 3D particle sphere
-    val infiniteTransition = rememberInfiniteTransition(label = "OrbTransitions")
+    val infiniteTransition = rememberInfiniteTransition(label = "ReactorOrb")
 
-    val baseRotation by infiniteTransition.animateFloat(
+    val outerRotation by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
             animation = tween(
                 durationMillis = when (state) {
-                    AssistantState.THINKING -> 2000
-                    AssistantState.SPEAKING -> 4500
-                    AssistantState.LISTENING -> 6000
-                    AssistantState.IDLE -> 12000
+                    AssistantState.THINKING -> 4000
+                    AssistantState.SPEAKING -> 7000
+                    AssistantState.LISTENING -> 9000
+                    AssistantState.IDLE -> 18000
                 },
                 easing = LinearEasing
             ),
             repeatMode = RepeatMode.Restart
         ),
-        label = "OrbBaseRotation"
+        label = "OuterRotation"
     )
 
-    val breathingScale by infiniteTransition.animateFloat(
-        initialValue = 0.94f,
-        targetValue = 1.06f,
+    val innerNodeRotation by infiniteTransition.animateFloat(
+        initialValue = 360f,
+        targetValue = 0f,
         animationSpec = infiniteRepeatable(
-            animation = tween(2200, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "BreathingScale"
-    )
-
-    val waveRipple by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = LinearEasing),
+            animation = tween(
+                durationMillis = when (state) {
+                    AssistantState.THINKING -> 3500
+                    AssistantState.SPEAKING -> 6000
+                    else -> 14000
+                },
+                easing = LinearEasing
+            ),
             repeatMode = RepeatMode.Restart
         ),
-        label = "WaveRipple"
+        label = "InnerNodeRotation"
     )
 
-    // Smooth animated amplitude response
-    val animatedAmplitude by animateFloatAsState(
+    val pulseFactor by infiniteTransition.animateFloat(
+        initialValue = 0.96f,
+        targetValue = 1.04f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "PulseFactor"
+    )
+
+    val animatedAmp by animateFloatAsState(
         targetValue = audioAmplitude,
         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-        label = "SmoothAmplitude"
+        label = "AnimatedAmp"
     )
 
-    // Pre-calculate 75 deterministic spherical particles
-    val particles = remember {
-        val list = mutableListOf<OrbParticle>()
-        val count = 75
-        for (i in 0 until count) {
-            val theta = (i * 137.5f * (PI / 180.0)).toFloat() // Golden angle
-            val phi = acos(1f - 2f * (i + 0.5f) / count)
-            val rRatio = 0.65f + (i % 7) * 0.05f
-            val size = 2.0f + (i % 4) * 1.5f
-            val speed = 0.8f + (i % 5) * 0.1f
-            list.add(OrbParticle(theta, phi, rRatio, size, speed))
-        }
-        list
-    }
-
     Canvas(modifier = modifier) {
-        val centerX = size.width / 2f
-        val centerY = size.height / 2f
-        val minDim = min(size.width, size.height)
-        val coreRadius = (minDim * 0.32f) * when (state) {
-            AssistantState.LISTENING -> (1.05f + animatedAmplitude * 0.35f)
-            AssistantState.SPEAKING -> (1.02f + animatedAmplitude * 0.25f)
-            AssistantState.THINKING -> 1.08f
-            AssistantState.IDLE -> breathingScale
+        val cx = size.width / 2f
+        val cy = size.height / 2f
+        val maxR = (min(size.width, size.height) / 2f) * 0.92f
+        val reactiveScale = when (state) {
+            AssistantState.LISTENING -> 1f + animatedAmp * 0.14f
+            AssistantState.SPEAKING -> 1f + animatedAmp * 0.12f
+            AssistantState.THINKING -> 1.03f
+            AssistantState.IDLE -> pulseFactor
         }
 
-        // 1. Ambient Background Radial Glow
+        // 1. Soft Ambient Radial Halo
         drawCircle(
             brush = Brush.radialGradient(
                 colors = listOf(
-                    primaryColor.copy(alpha = if (state == AssistantState.LISTENING) 0.35f else 0.20f),
-                    secondaryColor.copy(alpha = 0.08f),
+                    primaryColor.copy(alpha = 0.22f),
+                    primaryColor.copy(alpha = 0.07f),
                     Color.Transparent
                 ),
-                center = Offset(centerX, centerY),
-                radius = coreRadius * 2.2f
+                center = Offset(cx, cy),
+                radius = maxR * 1.15f
             ),
-            radius = coreRadius * 2.2f,
-            center = Offset(centerX, centerY)
+            radius = maxR * 1.15f,
+            center = Offset(cx, cy)
         )
 
-        // 2. Outer HUD Concentric Rings
-        drawHudRings(
-            centerX = centerX,
-            centerY = centerY,
-            radius = coreRadius * 1.35f,
-            rotation = baseRotation,
-            state = state,
-            primaryColor = primaryColor,
-            secondaryColor = secondaryColor
-        )
-
-        // 3. Speaking / Listening Ripple Waves
-        if (state == AssistantState.SPEAKING || state == AssistantState.LISTENING) {
-            val rippleRadius1 = coreRadius + (waveRipple * coreRadius * 0.8f)
-            val rippleAlpha1 = (1f - waveRipple).coerceIn(0f, 0.7f)
-            drawCircle(
-                color = primaryColor.copy(alpha = rippleAlpha1),
-                radius = rippleRadius1,
-                center = Offset(centerX, centerY),
-                style = Stroke(width = 2.dp.toPx())
+        // 2. Outermost Dashed Telemetry Ring + Cardinal Ticks
+        val rOuter1 = maxR * 0.95f
+        drawCircle(
+            color = primaryColor.copy(alpha = 0.45f),
+            radius = rOuter1,
+            center = Offset(cx, cy),
+            style = Stroke(
+                width = 1.5.dp.toPx(),
+                pathEffect = PathEffect.dashPathEffect(floatArrayOf(14f, 18f), phase = outerRotation)
             )
+        )
 
-            val ripplePhase2 = (waveRipple + 0.5f) % 1f
-            val rippleRadius2 = coreRadius + (ripplePhase2 * coreRadius * 0.8f)
-            val rippleAlpha2 = (1f - ripplePhase2).coerceIn(0f, 0.6f)
-            drawCircle(
-                color = secondaryColor.copy(alpha = rippleAlpha2),
-                radius = rippleRadius2,
-                center = Offset(centerX, centerY),
-                style = Stroke(width = 1.5.dp.toPx())
+        // 36 radial tick marks around the outer ring (matching Screenshot 4)
+        val tickCount = 36
+        for (i in 0 until tickCount) {
+            val angleDeg = (i * (360f / tickCount)) + outerRotation * 0.4f
+            val rad = Math.toRadians(angleDeg.toDouble())
+            val isMajor = i % 3 == 0
+            val innerTickR = if (isMajor) rOuter1 * 0.85f else rOuter1 * 0.90f
+            val outerTickR = if (isMajor) rOuter1 * 0.97f else rOuter1 * 0.94f
+            val start = Offset(
+                cx + (innerTickR * cos(rad)).toFloat(),
+                cy + (innerTickR * sin(rad)).toFloat()
+            )
+            val end = Offset(
+                cx + (outerTickR * cos(rad)).toFloat(),
+                cy + (outerTickR * sin(rad)).toFloat()
+            )
+            drawLine(
+                color = primaryColor.copy(alpha = if (isMajor) 0.80f else 0.35f),
+                start = start,
+                end = end,
+                strokeWidth = if (isMajor) 2.5.dp.toPx() else 1.2.dp.toPx(),
+                cap = StrokeCap.Round
             )
         }
 
-        // 4. 3D Spherical Particle Cloud
-        drawParticleSphere(
-            centerX = centerX,
-            centerY = centerY,
-            baseRadius = coreRadius,
-            rotationDeg = baseRotation,
-            state = state,
-            amplitude = animatedAmplitude,
-            particles = particles,
-            primaryColor = primaryColor,
-            secondaryColor = secondaryColor
-        )
-
-        // 5. Inner Energy Core Orb
-        val coreGradient = Brush.radialGradient(
-            colors = listOf(
-                Color.White.copy(alpha = 0.95f),
-                primaryColor.copy(alpha = 0.85f),
-                secondaryColor.copy(alpha = 0.55f),
-                Color.Transparent
-            ),
-            center = Offset(centerX, centerY),
-            radius = coreRadius * 0.65f
+        // 3. Secondary Segmented Arc Ring
+        val rOuter2 = maxR * 0.78f
+        drawCircle(
+            color = Color(0xFF0A1D24),
+            radius = rOuter2,
+            center = Offset(cx, cy),
+            style = Stroke(width = 18.dp.toPx())
         )
         drawCircle(
-            brush = coreGradient,
-            radius = coreRadius * 0.65f,
-            center = Offset(centerX, centerY)
+            color = primaryColor.copy(alpha = 0.28f),
+            radius = rOuter2,
+            center = Offset(cx, cy),
+            style = Stroke(width = 1.5.dp.toPx())
         )
 
-        // 6. Central Cybernetic Reticle / Crosshair Marks
-        val markLength = coreRadius * 0.22f
-        val reticleAlpha = when (state) {
-            AssistantState.LISTENING -> 0.9f
-            AssistantState.THINKING -> 0.7f
-            AssistantState.SPEAKING -> 0.85f
-            AssistantState.IDLE -> 0.5f
+        for (i in 0 until 4) {
+            drawArc(
+                color = primaryColor.copy(alpha = 0.55f),
+                startAngle = -outerRotation + (i * 90f) + 15f,
+                sweepAngle = 52f,
+                useCenter = false,
+                topLeft = Offset(cx - rOuter2, cy - rOuter2),
+                size = Size(rOuter2 * 2, rOuter2 * 2),
+                style = Stroke(width = 2.5.dp.toPx(), cap = StrokeCap.Round)
+            )
         }
-        val reticleColor = primaryColor.copy(alpha = reticleAlpha)
 
-        // Horizontal reticle ticks
-        drawLine(
-            color = reticleColor,
-            start = Offset(centerX - coreRadius * 0.5f - markLength, centerY),
-            end = Offset(centerX - coreRadius * 0.5f, centerY),
-            strokeWidth = 2.dp.toPx()
+        // 4. Inner Track Ring with 4 Glowing Cyan Orbital Nodes
+        val rInnerTrack = maxR * 0.56f * reactiveScale
+        drawCircle(
+            color = Color(0xFF07151B),
+            radius = rInnerTrack * 1.12f,
+            center = Offset(cx, cy)
         )
-        drawLine(
-            color = reticleColor,
-            start = Offset(centerX + coreRadius * 0.5f, centerY),
-            end = Offset(centerX + coreRadius * 0.5f + markLength, centerY),
-            strokeWidth = 2.dp.toPx()
+        drawCircle(
+            color = primaryColor.copy(alpha = 0.40f),
+            radius = rInnerTrack,
+            center = Offset(cx, cy),
+            style = Stroke(width = 2.dp.toPx())
         )
-        // Vertical reticle ticks
-        drawLine(
-            color = reticleColor,
-            start = Offset(centerX, centerY - coreRadius * 0.5f - markLength),
-            end = Offset(centerX, centerY - coreRadius * 0.5f),
-            strokeWidth = 2.dp.toPx()
+
+        // Deep dark core chamber
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    Color(0xFF051319),
+                    Color(0xFF02070A)
+                ),
+                center = Offset(cx, cy),
+                radius = rInnerTrack * 0.94f
+            ),
+            radius = rInnerTrack * 0.94f,
+            center = Offset(cx, cy)
         )
-        drawLine(
-            color = reticleColor,
-            start = Offset(centerX, centerY + coreRadius * 0.5f),
-            end = Offset(centerX, centerY + coreRadius * 0.5f + markLength),
-            strokeWidth = 2.dp.toPx()
-        )
-    }
-}
 
-private fun DrawScope.drawHudRings(
-    centerX: Float,
-    centerY: Float,
-    radius: Float,
-    rotation: Float,
-    state: AssistantState,
-    primaryColor: Color,
-    secondaryColor: Color
-) {
-    // Outer dashed ring
-    drawArc(
-        color = primaryColor.copy(alpha = 0.45f),
-        startAngle = rotation,
-        sweepAngle = 75f,
-        useCenter = false,
-        topLeft = Offset(centerX - radius, centerY - radius),
-        size = Size(radius * 2, radius * 2),
-        style = Stroke(width = 2.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 10f)))
-    )
+        // 4 Glowing Orbital Nodes on the Inner Track (45°, 135°, 225°, 315°)
+        val nodeAngles = listOf(45f, 135f, 225f, 315f)
+        nodeAngles.forEach { baseAngle ->
+            val rad = Math.toRadians((baseAngle + innerNodeRotation * 0.25f).toDouble())
+            val nx = cx + (rInnerTrack * 0.84f * cos(rad)).toFloat()
+            val ny = cy + (rInnerTrack * 0.84f * sin(rad)).toFloat()
 
-    drawArc(
-        color = secondaryColor.copy(alpha = 0.5f),
-        startAngle = rotation + 180f,
-        sweepAngle = 80f,
-        useCenter = false,
-        topLeft = Offset(centerX - radius, centerY - radius),
-        size = Size(radius * 2, radius * 2),
-        style = Stroke(width = 2.5.dp.toPx())
-    )
-
-    // Inner counter-rotating ring
-    val innerR = radius * 0.85f
-    drawArc(
-        color = primaryColor.copy(alpha = 0.35f),
-        startAngle = -rotation * 1.5f,
-        sweepAngle = 120f,
-        useCenter = false,
-        topLeft = Offset(centerX - innerR, centerY - innerR),
-        size = Size(innerR * 2, innerR * 2),
-        style = Stroke(width = 1.5.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 6f)))
-    )
-
-    // Fine orbital ring
-    drawCircle(
-        color = primaryColor.copy(alpha = 0.15f),
-        radius = radius * 1.15f,
-        center = Offset(centerX, centerY),
-        style = Stroke(width = 1.dp.toPx())
-    )
-}
-
-private fun DrawScope.drawParticleSphere(
-    centerX: Float,
-    centerY: Float,
-    baseRadius: Float,
-    rotationDeg: Float,
-    state: AssistantState,
-    amplitude: Float,
-    particles: List<OrbParticle>,
-    primaryColor: Color,
-    secondaryColor: Color
-) {
-    val rotRadY = (rotationDeg * (PI / 180.0)).toFloat()
-    val rotRadX = ((rotationDeg * 0.5f) * (PI / 180.0)).toFloat()
-
-    val expansion = when (state) {
-        AssistantState.LISTENING -> 1.0f + amplitude * 0.4f
-        AssistantState.SPEAKING -> 1.0f + amplitude * 0.3f
-        AssistantState.THINKING -> 1.15f
-        AssistantState.IDLE -> 1.0f
-    }
-
-    particles.forEach { p ->
-        val r = baseRadius * p.radiusRatio * expansion
-
-        // Spherical to Cartesian coordinates (x, y, z)
-        val x0 = r * sin(p.phi) * cos(p.theta)
-        val y0 = r * cos(p.phi)
-        val z0 = r * sin(p.phi) * sin(p.theta)
-
-        // Rotate around Y axis
-        val x1 = x0 * cos(rotRadY * p.speedFactor) + z0 * sin(rotRadY * p.speedFactor)
-        val z1 = -x0 * sin(rotRadY * p.speedFactor) + z0 * cos(rotRadY * p.speedFactor)
-
-        // Rotate around X axis
-        val y2 = y0 * cos(rotRadX) - z1 * sin(rotRadX)
-        val z2 = y0 * sin(rotRadX) + z1 * cos(rotRadX)
-
-        // Perspective 3D projection
-        val fov = 400f
-        val depthFactor = (z2 + fov) / fov
-        if (depthFactor > 0.1f) {
-            val projX = centerX + x1 * depthFactor
-            val projY = centerY + y2 * depthFactor
-
-            // Alpha and particle size scaled with depth
-            val alpha = ((z2 / (baseRadius * 1.2f) + 1f) / 2f).coerceIn(0.15f, 0.95f)
-            val pSize = (p.baseSize * depthFactor).coerceAtLeast(1.5f)
-
-            val pColor = if (z2 > 0) primaryColor else secondaryColor
+            // Outer glow of orbital node
             drawCircle(
-                color = pColor.copy(alpha = alpha),
-                radius = pSize,
-                center = Offset(projX, projY)
+                color = primaryColor.copy(alpha = 0.35f),
+                radius = 9.dp.toPx(),
+                center = Offset(nx, ny)
+            )
+            // Solid bright cyan node
+            drawCircle(
+                color = CyanBright,
+                radius = 4.5.dp.toPx(),
+                center = Offset(nx, ny)
+            )
+        }
+
+        // 5. Center Glowing Cyan Core Disc with 7-Dot Matrix (matching Screenshot 4)
+        val coreR = maxR * 0.22f * reactiveScale
+
+        // Core outer bloom
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    primaryColor.copy(alpha = 0.65f),
+                    primaryColor.copy(alpha = 0.18f),
+                    Color.Transparent
+                ),
+                center = Offset(cx, cy),
+                radius = coreR * 1.9f
+            ),
+            radius = coreR * 1.9f,
+            center = Offset(cx, cy)
+        )
+
+        // Solid glowing cyan center disc
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    CyanBright,
+                    primaryColor
+                ),
+                center = Offset(cx, cy),
+                radius = coreR
+            ),
+            radius = coreR,
+            center = Offset(cx, cy)
+        )
+
+        // 7 dark dots inside the center cyan core (1 center + 6 hexagonal ring)
+        val centerDotR = coreR * 0.11f
+        val dotColor = Color(0xFF04141A)
+        drawCircle(
+            color = dotColor,
+            radius = centerDotR,
+            center = Offset(cx, cy)
+        )
+
+        val dotRingR = coreR * 0.44f
+        for (i in 0 until 6) {
+            val angleRad = Math.toRadians((i * 60.0) + outerRotation * 0.5)
+            val dx = cx + (dotRingR * cos(angleRad)).toFloat()
+            val dy = cy + (dotRingR * sin(angleRad)).toFloat()
+            drawCircle(
+                color = dotColor,
+                radius = centerDotR * 0.9f,
+                center = Offset(dx, dy)
             )
         }
     }

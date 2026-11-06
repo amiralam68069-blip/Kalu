@@ -1,6 +1,6 @@
 {
-  "name": "NOVA",
-  "description": "Futuristic JARVIS-style voice AI assistant in Hinglish with real-time reactive orb and device actions.",
+  "name": "Amancipher.Ai",
+  "description": "Advanced JARVIS-style voice and device control AI assistant with Accessibility Service automation, Room Memory Core, Vision analysis, and YouTube/WhatsApp integration.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

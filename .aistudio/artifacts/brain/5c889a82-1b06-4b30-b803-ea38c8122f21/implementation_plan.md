@@ -1,131 +1,128 @@
-# NOVA - Futuristic Voice AI Assistant (JARVIS-Style)
+# Amancipher.Ai — Advanced Cybernetic Voice & Device Control AI Assistant
 
-A premium, futuristic voice AI assistant Android application built with Jetpack Compose. NOVA speaks in warm, casual Hinglish with friend-like personality, features a 3D-effect audio-reactive particle Canvas orb, and executes real Android actions including YouTube playback, WhatsApp messaging with pre-confirmation, calls, alarms, reminders, notes, and live Open-Meteo weather.
+Transform the application into **Amancipher.Ai**, an advanced cybernetic AI assistant for Android capable of device control via Accessibility Services and hardware APIs, multimodal Vision & screen inspection, Room Database long-term Memory Core, YouTube Data API v3 automation, WhatsApp messaging/calls with verbal/tap confirmation, and the exact sci-fi HUD & Settings aesthetic from the reference screenshots.
 
 ---
 
 ## User Review & Critical Decisions
 
 > [!IMPORTANT]
-> The following architectural decisions were confirmed during Phase 1:
-> - **Architecture**: 100% Native Jetpack Compose app with custom glowing particle Canvas orb and native Android integration (WhatsApp intents, YouTube playback, Alarms & Notifications, Contacts, Room/DataStore persistence).
-> - **Voice & Audio Pipeline**: Gemini AI backend with Speech Recognition and Android Text-to-Speech / real-time streaming audio response, supporting tap-to-talk, wake word detection, and interruptibility.
-> - **Personality & Language**: Casual Hinglish (Hindi + English mix) with friendly reactions ("arre wah", "acha", "hmm", "suno"), light humor, and mood adaptation.
+> Confirmed choices from Phase 1:
+> - **Confirmed Decision 1 (Device & Accessibility Control)**: Implement real Android hardware controls (Flashlight via `CameraManager`, Media/System Volume via `AudioManager`, Screen Brightness via window attributes/settings, App Launchers for Instagram, WhatsApp, Spotify, YouTube) alongside a real Android `AccessibilityService` (`AmancipherAccessibilityService`) capable of inspecting active window nodes, clicking elements by text, typing text, scrolling, and dispatching global media/navigation actions.
+> - **Confirmed Decision 2 (Vision & Screen Inspection)**: Clicking the `VISION` pill in the bottom dock opens a dedicated **Vision & Screen Inspector Hub** supporting live camera capture, zero-permission Android Photo Picker image analysis via Gemini Vision, and real-time screen hierarchy inspection via the Accessibility Service.
+> - **Confirmed Decision 3 (Branding & Persona)**: Default Assistant Name set to `Amancipher.Ai` and default User Name set to `Amancipher`, with a witty, helpful Hinglish/English persona that remembers user routines, preferences, notes, and facts in a local Room Database.
 
 ---
 
 ## 1. Overview & Core Concept
 
-- **What It Does**: NOVA is an interactive personal AI companion inspired by JARVIS, designed specifically for Android. Users interact via voice (or typed text) and receive instant spoken responses in a natural, warm Hinglish tone. NOVA can automate daily tasks: playing music on YouTube, queuing WhatsApp messages to contacts with explicit voice confirmation, fetching live weather forecasts via Open-Meteo, setting alarms and reminders, managing to-do notes, and delivering personalized morning briefings.
-- **Target Audience**: Users seeking an intuitive, voice-first companion with personality, local Indian language flavor (Hinglish), and rapid execution of everyday phone actions.
-- **Key Value**: Combines cutting-edge conversational intelligence with practical Android device actions in a sci-fi HUD interface that feels responsive and alive.
+- **What It Does**: **Amancipher.Ai** is an all-in-one voice and device automation assistant. It listens and responds in witty Hinglish or English, controls device hardware (flashlight, brightness, volume), automates apps and UI actions through an Android Accessibility Service, searches and plays YouTube videos via YouTube Data API v3 or intent fallback, sends WhatsApp messages and initiates calls with an active confirmation policy, and stores long-term memories (routines, facts, preferences, notes) in a Room Database.
+- **Target Audience**: Power users who want a JARVIS-style cybernetic HUD assistant (`Amancipher.Ai`) with genuine Android device control, persistent memory, and customizable AI models and voices.
+- **Key Value**: Bridges conversational Gemini intelligence with deep Android system control and a faithful, high-contrast cyber-grid HUD interface.
 
 ---
 
-## 2. User Experience & Visual Design
+## 2. User Experience & Visual Design (Matching Reference Screenshots)
 
-### Key User Flows
-1. **Zero-State & Active Standby**:
-   - The user opens NOVA into a full-bleed, edge-to-edge dark glassmorphic dashboard.
-   - The center of the screen houses the **NOVA Core Orb**: concentric glowing rings and orbital particles pulsing rhythmically in Idle state.
-   - HUD telemetry displays the current status ("STANDBY // NOVA READY"), ambient sound level, time, and quick-prompt action chips.
-2. **Voice Interaction Loop**:
-   - The user taps the glowing microphone or speaks "Hey Nova".
-   - The Core Orb dynamically expands with luminous particle flux; a neon sound wave ripples at the base as speech is recognized in real time.
-   - When speech ends, the state shifts to "Thinking" (accelerating orbital particles, subtle cyan-to-purple chromatic shifts).
-   - NOVA responds in natural Hinglish with warm voice audio while synchronized text streams into the transcript card.
-3. **Action Execution with Safe Confirmation**:
-   - If the user says: *"Aman ko Hi message bhejo"*, NOVA looks up Aman in saved contacts, displays a confirmation card on screen, asks aloud *"Aman ko 'Hi' bhej du?"*, and upon user voice or button confirmation (*"Haan bhej do"*), launches WhatsApp with the pre-filled message.
-   - If the user says: *"YouTube pe badiya sa song play karo"*, NOVA executes a search and opens the video/music player within the app or YouTube.
-   - If the user asks for weather: *"Aaj mausam kaisa hai?"*, NOVA queries Open-Meteo for real-time temperature, condition, and rain probability without requiring an external API key.
-4. **Command & Settings Customization**:
-   - Quick-action drawer and settings sheet allow renaming the assistant (e.g., from "NOVA" to "FRIDAY" or "JARVIS"), modifying user nickname and interests, configuring Gemini API keys, managing phone contacts, and picking neon accent themes (Cyan Pulse, Ultraviolet, Crimson Neon).
+### Main HUD Screen (Screenshot 4)
+1. **Top Cybernetic Header Bar**:
+   - **Left**: Glowing cyan hexagonal core badge with a 7-dot inner matrix icon, paired with the assistant title (`Amancipher.Ai`) and live status subtitle (`● Calm — monitoring systems`, `● Listening — capturing audio`, `● Processing — analyzing intent`, or `● Speaking — voice transmission`).
+   - **Right**: Digital 24-hour clock (`20:11`) with animated 4-bar cyan signal meter and a hexagonal settings button (`╬`).
+2. **Cyber-Grid Background & Radar Reactor Orb**:
+   - Subtle dark teal/cyan coordinate grid (`#050B0E` base with `#0A2229` grid lines).
+   - **Centerpiece Radar Orb**: Concentric segmented tick-mark rings, glowing cyan orbital nodes (4 cardinal/diagonal luminous dots on the inner track), dark obsidian inner chamber, and a glowing cyan center core with the signature 7-dot matrix pattern that pulses and rotates with voice amplitude.
+3. **Framed `CONVERSATION` Panel**:
+   - Header label `CONVERSATION` in tracked monospace typography.
+   - Glassmorphic container with sharp cyan L-bracket corner accents.
+   - Displays timestamped messages (`You · 20:10:47`, `Amancipher.Ai · 20:10:47`) with circular user/assistant avatars, Hindi/Hinglish/English script support, and interactive confirmation/action cards (WhatsApp confirm, YouTube player, Weather, Screen Inspector results).
+4. **Bottom 4-Control Dock**:
+   - **`[ ⏻ ONLINE / OFFLINE ]`** pill button on the left: toggles active monitoring / hands-free wake mode.
+   - **`[ 🖥 VISION ]`** pill button: launches the multimodal Camera Vision & Screen Inspection modal.
+   - **`( 🎙 )` Center Glowing Cyan Mic Button**: large circular neon cyan button with outer halo glow for tap-to-talk or interrupting speech.
+   - **`[ 🕒 HISTORY ]`** pill button on the right: opens conversation history, saved memories, and text command input drawer.
 
-### Visual Identity & Theme
-- **Aesthetic Direction**: Sci-Fi Holographic Glassmorphism / Cybernetic HUD.
-- **Color Palette**:
-  - `Background`: Deep Obsidian Black (`#080A10`) with radial gradient backdrops (`#0F172A`).
-  - `Primary Glow`: Neon Cyan (`#00F2FE` / `#4FACFE`).
-  - `Secondary Accent`: Electric Violet (`#9D4EDD` / `#7928CA`).
-  - `Glass Surfaces`: Dark translucent charcoal (`#141926` with 60% opacity) and 1dp neon borders (`#00F2FE` at 25% opacity).
-  - `Text Hierarchy`: Crisp White (`#FFFFFF`) for titles, Ice Blue (`#D6F1FF`) for speech captions, and Muted Slate (`#7E8B9B`) for telemetry labels.
-- **Typography & Motion**:
-  - Clean futuristic monospace for HUD readouts and status meters (`FontFamily.Monospace`).
-  - High-legibility sans-serif for transcripts and cards.
-  - Smooth 60fps trigonometric particle physics on Compose `Canvas` reacting dynamically to audio levels and assistant states (`Idle`, `Listening`, `Thinking`, `Speaking`).
+### Full-Screen Settings Page (Screenshots 1, 2, 3)
+1. **Sticky Header**: Back button (`<`), spaced title `S e t t i n g s`, and `SAVE` action button.
+2. **API Key Card**:
+   - Masked `GEMINI API KEY` input field with visibility toggle (`👁`), `Paste from clipboard` action link, and `● Key Configured` status indicator.
+3. **AI Model Card**:
+   - Dropdown selector featuring:
+     - `Gemini 3.1 Flash Live (Ultra-Low Latency - Default)`
+     - `Gemini 2.5 Flash (Balanced Speed & Reasoning)`
+     - `Gemini 2.5 Pro (Deep Intelligence & Coding)`
+4. **Voice Selector Card**:
+   - 2x4 interactive pill grid: `Puck`, `Charon`, `Kore`, `Fenrir`, `Aoede`, `Leda`, `Orus`, `Zephyr` (active voice highlighted in solid glowing cyan `#5CE1E6` with dark text, modulating TTS pitch/rate and Gemini voice config).
+5. **Personality Card**:
+   - Mode dropdown (`Assistant Mode`, `Witty Cybernetic`, `Tactical JARVIS`, `Casual Friend`).
+   - Selectable trait chips: `Friendly`, `Helpful`, `Witty`, `Hinglish or English`.
+   - `USER NAME` input field (default `Amancipher`) and `ASSISTANT NAME` input field (default `Amancipher.Ai`).
+6. **Permissions Card**:
+   - Live count (`6/6 granted` or current count) for Microphone, Camera, Notifications, Accessibility Service, Write Settings (Brightness), and Network.
+   - Glowing cyan `ALLOW ALL` button and expandable `Manage Permissions` list with one-tap system permission/accessibility settings launchers.
+7. **Memory Core Card (Room Database)**:
+   - Description: *"Short-term conversation buffer + Room Database long-term knowledge (Routines, Preferences, Notes, Facts)."*
+   - Red-outlined `CLEAR` button to wipe memories and cyan-outlined `VIEW MEMORIES` button to inspect/add/delete stored facts and routines.
+8. **YouTube Automation Card**:
+   - `Enable YouTube Automation` switch.
+   - `YOUTUBE API KEY` masked input field, `Paste from clipboard`, `VALIDATE KEY` button, and live status indicator (`Status: Key is empty` / `Status: Validated`).
+9. **Mobile Control Card**:
+   - Header: `WHAT AMANCIPHER.AI CAN DO ON YOUR PHONE` with interactive tap-to-run command examples:
+     - `"Turn on / off flashlight"`
+     - `"Set brightness to 50%"`, `"Increase brightness"`
+     - `"Volume up / down"`, `"Set volume to 80%"`
+     - `"Open Instagram"`, `"Open WhatsApp"`, `"Open Spotify"`
+     - `"Send WhatsApp to Rahul saying I will be late"`
+     - `"Call Rahul on WhatsApp"`, `"Video call Mom"`
+     - `"Remember my gym starts at 6 PM"`, `"Forget routine"`
+   - Footer status: `● WhatsApp Confirmation Policy: Active` (*"Amancipher.Ai will never send any message without explicit verbal confirmation."*).
 
 ---
 
 ## 3. Key Product Decisions & Trade-Offs
 
-- **Decision 1: Custom Jetpack Compose Canvas Orb vs Embedded WebGL WebView**:
-  - *Chosen Approach*: A 100% native Compose Canvas with layered radial gradients, trigonometric rotating orbital arcs, particle swarm physics, and bezier audio waveforms.
-  - *Why*: Delivers 60fps hardware-accelerated rendering with zero WebView overhead, instant startup time, native lifecycle awareness, and seamless touch responsiveness.
-- **Decision 2: Safety Gate on Outbound Communication**:
-  - *Chosen Approach*: Two-phase confirmation (voice prompt + visual card with "Confirm / Cancel") before triggering external communication (WhatsApp, SMS, Phone Call).
-  - *Why*: Prevents accidental messages or calls triggered by background noise or misinterpreted speech.
-- **Decision 3: Zero-Config Open-Meteo Weather Integration**:
-  - *Chosen Approach*: Query Open-Meteo REST API using standard Retrofit/OkHttp for current location weather.
-  - *Why*: Free, open-access, and requires no API keys, ensuring immediate out-of-the-box reliability.
-- **Decision 4: Flexible Gemini Client with Local Fallback**:
-  - *Chosen Approach*: Configurable API Key via `.env` / BuildConfig or in-app Settings dialog with built-in intent parsing for offline device operations.
-  - *Why*: Allows seamless testing even before an API key is entered, while unlocking deep conversational intelligence when active.
+- **Decision 1: Real Room Database for Memory Core**:
+  - *Chosen Approach*: Use Room (`@Entity`, `@Dao`, `RoomDatabase`) with KSP to persist long-term user memories (`MemoryEntity` with category: `Routine`, `Preference`, `Note`, `Fact`). Inject stored memories into every Gemini prompt so Amancipher.Ai remembers routines like *"my gym starts at 6 PM"* across sessions.
+- **Decision 2: Real Android Hardware & Accessibility Service Control**:
+  - *Chosen Approach*: Implement `DeviceController` for hardware actions (`CameraManager.setTorchMode` for flashlight, `AudioManager` for volume/media playback dispatch, window brightness + system settings intent for brightness, package/URI intents for Instagram/Spotify/WhatsApp) and `AmancipherAccessibilityService` for screen node inspection, element clicking, text typing, and scrolling.
+- **Decision 3: Multimodal Vision & Screen Context**:
+  - *Chosen Approach*: Provide both camera/photo visual analysis via Gemini multimodal API and live Accessibility screen node reading so the user can ask *"What is on my screen?"* or *"Analyze this photo"*.
 
 ---
 
 ## 4. Technical Architecture & Data Strategy
 
 ```
-┌────────────────────────────────────────────────────────┐
-│                   MainActivity UI                      │
-│  ┌──────────────────┐  ┌─────────────────────────────┐ │
-│  │   Top HUD Bar    │  │ Quick Action Chips (Row)    │ │
-│  │ (Status/Battery) │  │ [Music][Msg][Weather][Notes]│ │
-│  └──────────────────┘  └─────────────────────────────┘ │
-│  ┌───────────────────────────────────────────────────┐ │
-│  │          NOVA Reactive Particle Canvas            │ │
-│  │  (Rotational Arcs + Particle Swarm + Sine Waves)  │ │
-│  └───────────────────────────────────────────────────┘ │
-│  ┌───────────────────────────────────────────────────┐ │
-│  │           Live Transcript & Action Card           │ │
-│  │  (User Query, NOVA Hinglish Reply, Confirm Modal) │ │
-│  └───────────────────────────────────────────────────┘ │
-│  ┌───────────────────────────────────────────────────┐ │
-│  │     Bottom Controls: Mic Pulse + Text Input       │ │
-│  └───────────────────────────────────────────────────┘ │
-└───────────────────────────┬────────────────────────────┘
-                            │
-┌───────────────────────────▼────────────────────────────┐
-│                    NovaViewModel                       │
-│  - AssistantState (Idle, Listening, Thinking, Speaking)│
-│  - TranscriptHistory & PendingAction Confirmation      │
-│  - Settings & User Profile State                       │
-└───────┬───────────────────┬───────────────────┬────────┘
-        │                   │                   │
-┌───────▼───────┐   ┌───────▼───────┐   ┌───────▼────────┐
-│  GeminiClient │   │ AndroidVoice  │   │  ActionRouter  │
-│  - Hinglish   │   │  - STT Engine │   │  - WhatsApp    │
-│    Persona    │   │  - TTS Engine │   │  - Open-Meteo  │
-│  - Tool/Intent│   │  - Waveform   │   │  - YouTube/Web │
-│    Detection  │   │    Levels     │   │  - Alarms/Notes│
-└───────────────┘   └───────────────┘   └────────────────┘
+┌───────────────────────────────────────────────────────────────────────┐
+│                         MainActivity (Compose)                        │
+│  ┌─────────────────────────────────┐  ┌─────────────────────────────┐ │
+│  │        HUD Main Screen          │  │    Full-Screen Settings     │ │
+│  │ - Top Hex Bar & Digital Clock   │  │ - Gemini & YouTube API Keys │ │
+│  │ - Radar Reactor Orb Canvas      │  │ - Model & 8-Voice Selector  │ │
+│  │ - Framed CONVERSATION Box       │  │ - Personality & User Name   │ │
+│  │ - [ONLINE][VISION][MIC][HISTORY]│  │ - Permissions & Memory Core │ │
+│  └────────────────┬────────────────┘  └──────────────┬──────────────┘ │
+└───────────────────┼──────────────────────────────────┼────────────────┘
+                    │                                  │
+┌───────────────────▼──────────────────────────────────▼────────────────┐
+│                         NovaViewModel (MVVM)                          │
+│  - UI State (Online/Offline, AssistantState, Active Screen/Modals)    │
+│  - Conversation Buffer & Pending Confirmation State                   │
+└─────┬─────────────────┬──────────────────┬──────────────────┬─────────┘
+      │                 │                  │                  │
+┌─────▼──────┐   ┌──────▼───────┐   ┌──────▼───────┐   ┌──────▼─────────┐
+│AmancipherAI│   │ MemoryCoreDB │   │DeviceControl │   │Vision & Speech │
+│  Engine    │   │ (Room + DAO) │   │ & A11yService│   │   Managers     │
+│ - Gemini   │   │ - Routines   │   │ - Flashlight │   │ - STT / TTS    │
+│   Vision & │   │ - Preferences│   │ - Volume/Brt │   │   (8 Voices)   │
+│   Chat     │   │ - Notes/Facts│   │ - Screen Node│   │ - Camera/Photo │
+│ - YouTube  │   │              │   │   Click/Type │   │   Analyzer     │
+│   API v3   │   │              │   │ - App Launch │   │                │
+└────────────┘   └──────────────┘   └──────────────┘   └────────────────┘
 ```
 
-### Data Model & Persistence
-- **NovaPreferences**: Assistant name, user name, preferred glow theme, wake word toggle, custom Gemini API key.
-- **ContactEntity**: Name, phone number, relationship/notes for WhatsApp and call routing.
-- **NoteItem**: Title, content, timestamp, and completion status.
-- **AlarmReminder**: Label, time, and active status.
-
-### Component & State Mapping
-- `NovaOrbCanvas`: Accepts `AssistantState` and `audioAmplitude` (0.0 to 1.0f). Generates orbital rotation, expansion factor, particle turbulence, and glow rings.
-- `VoiceManager`: Orchestrates Android `SpeechRecognizer` for voice input, decodes audio amplitude in real-time, and feeds `TextToSpeech` with customized female pitch and speech rate.
-- `ActionRouter`: Dispatches verified actions to Android system intents (`Intent.ACTION_VIEW` for WhatsApp, `Intent.ACTION_DIAL`, `AlarmClock.ACTION_SET_ALARM`, and YouTube search).
-- `SettingsBottomSheet`: Manages user credentials, assistant preferences, and contact records.
-
----
-
-## 5. Verification Plan
-- **Compilation Check**: Run `compile_applet` to ensure error-free Kotlin and Compose build.
-- **UI & Layout Verification**: Verify full-bleed edge-to-edge layouts, navigation bar safe insets, and responsive card sizing.
-- **Permission & Intent Handling**: Verify graceful runtime permission checks for microphone (`RECORD_AUDIO`) and notifications.
+### Interactive Component & State Mapping
+- **Top Hex Settings Button (`╬`)**: Switches smoothly between the HUD Main Screen and the Full-Screen Settings view (with `BackHandler` support).
+- **`ONLINE` Button**: Toggles active listening / hands-free wake word monitoring (`Calm — monitoring systems` vs `Offline — standby`).
+- **`VISION` Button**: Opens the Vision & Screen Inspection sheet where users can capture a camera photo, pick an image, or inspect current screen elements via `AmancipherAccessibilityService`, and ask Amancipher.Ai about it.
+- **`HISTORY` Button**: Opens a sheet with full conversation history, a quick text-command input bar, and stored long-term Memory Core items.
+- **Voice & Verbal Confirmation**: When a WhatsApp message or call command is issued, Amancipher.Ai asks for confirmation; saying *"Haan"*, *"Yes"*, *"Send it"*, or *"Bhej do"* (or tapping the confirmation button) immediately executes the action.

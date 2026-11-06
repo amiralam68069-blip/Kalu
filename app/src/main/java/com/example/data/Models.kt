@@ -16,12 +16,14 @@ sealed class ActionCard {
     data class WhatsAppConfirm(
         val contactName: String,
         val phoneNumber: String,
-        val message: String
+        val message: String,
+        val isVideoCall: Boolean = false
     ) : ActionCard()
 
     data class CallConfirm(
         val contactName: String,
-        val phoneNumber: String
+        val phoneNumber: String,
+        val viaWhatsApp: Boolean = false
     ) : ActionCard()
 
     data class WeatherCard(
@@ -36,7 +38,8 @@ sealed class ActionCard {
     data class YouTubePlayerCard(
         val query: String,
         val videoUrl: String,
-        val title: String
+        val title: String,
+        val videoId: String = ""
     ) : ActionCard()
 
     data class AlarmCard(
@@ -48,6 +51,18 @@ sealed class ActionCard {
         val id: String,
         val text: String,
         val isCompleted: Boolean
+    ) : ActionCard()
+
+    data class DeviceActionCard(
+        val actionTitle: String,
+        val detail: String,
+        val statusText: String
+    ) : ActionCard()
+
+    data class ScreenInspectCard(
+        val activePackage: String,
+        val elementCount: Int,
+        val summary: List<String>
     ) : ActionCard()
 }
 
@@ -73,10 +88,37 @@ data class NoteItem(
     val isDone: Boolean = false
 )
 
+val AVAILABLE_VOICES = listOf(
+    "Puck", "Charon", "Kore", "Fenrir",
+    "Aoede", "Leda", "Orus", "Zephyr"
+)
+
+val AVAILABLE_AI_MODELS = listOf(
+    "Gemini 3.1 Flash Live (Ultra-Low Latency - Default)",
+    "Gemini 2.5 Flash (Balanced Speed & Reasoning)",
+    "Gemini 2.5 Pro (Deep Intelligence & Coding)"
+)
+
+val AVAILABLE_PERSONALITY_MODES = listOf(
+    "Assistant Mode",
+    "Witty Cybernetic",
+    "Tactical JARVIS",
+    "Friendly Companion"
+)
+
 data class NovaConfig(
-    val assistantName: String = "NOVA",
-    val userName: String = "Aman",
+    val assistantName: String = "Amancipher.Ai",
+    val userName: String = "Amancipher",
     val wakeWordEnabled: Boolean = true,
+    val isOnline: Boolean = true,
     val apiKey: String = "",
+    val aiModel: String = AVAILABLE_AI_MODELS.first(),
+    val selectedVoice: String = "Puck",
+    val personalityMode: String = "Assistant Mode",
+    val traitFriendly: Boolean = true,
+    val traitHelpful: Boolean = true,
+    val traitHinglishOrEnglish: Boolean = true,
+    val youtubeAutomationEnabled: Boolean = true,
+    val youtubeApiKey: String = "",
     val glowThemeIndex: Int = 0 // 0 = Cyan, 1 = Purple, 2 = Rose, 3 = Emerald
 )

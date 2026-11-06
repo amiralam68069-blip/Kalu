@@ -17,11 +17,12 @@ import java.util.Locale
 class SpeechManager(
     private val context: Context,
     private val onResultReceived: (String) -> Unit,
-    private val onStateChanged: (Boolean) -> Unit // isSpeaking/isListening
+    private val onStateChanged: (Boolean) -> Unit
 ) {
     private var speechRecognizer: SpeechRecognizer? = null
     private var tts: TextToSpeech? = null
     private var isTtsInitialized = false
+    private var currentVoiceName: String = "Puck"
 
     private val _amplitude = MutableStateFlow(0f)
     val amplitude: StateFlow<Float> = _amplitude.asStateFlow()
@@ -43,14 +44,12 @@ class SpeechManager(
         tts = TextToSpeech(context) { status ->
             if (status == TextToSpeech.SUCCESS) {
                 isTtsInitialized = true
-                // Configure warm female pitch and natural pace
                 val hiLocale = Locale("hi", "IN")
                 val langResult = tts?.setLanguage(hiLocale)
                 if (langResult == TextToSpeech.LANG_MISSING_DATA || langResult == TextToSpeech.LANG_NOT_SUPPORTED) {
                     tts?.language = Locale.ENGLISH
                 }
-                tts?.setPitch(1.22f) // Warm female frequency
-                tts?.setSpeechRate(1.02f)
+                applyVoiceProfile(currentVoiceName)
 
                 tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                     override fun onStart(utteranceId: String?) {
@@ -78,6 +77,24 @@ class SpeechManager(
         }
     }
 
+    fun applyVoiceProfile(voiceName: String) {
+        currentVoiceName = voiceName
+        if (!isTtsInitialized) return
+        val (pitch, rate) = when (voiceName) {
+            "Puck" -> 1.08f to 1.05f
+            "Charon" -> 0.85f to 0.96f
+            "Kore" -> 1.18f to 1.02f
+            "Fenrir" -> 0.78f to 1.0f
+            "Aoede" -> 1.25f to 1.03f
+            "Leda" -> 1.15f to 0.98f
+            "Orus" -> 0.92f to 1.04f
+            "Zephyr" -> 1.20f to 1.06f
+            else -> 1.10f to 1.02f
+        }
+        tts?.setPitch(pitch)
+        tts?.setSpeechRate(rate)
+    }
+
     fun startListening() {
         stopSpeaking()
         if (!SpeechRecognizer.isRecognitionAvailable(context)) {
@@ -97,7 +114,6 @@ class SpeechManager(
                     }
 
                     override fun onRmsChanged(rmsdB: Float) {
-                        // RMS normalized to 0.0 - 1.0f
                         val normalized = ((rmsdB + 2f) / 12f).coerceIn(0.05f, 1.0f)
                         _amplitude.value = normalized
                     }
@@ -123,12 +139,7 @@ class SpeechManager(
                         }
                     }
 
-                    override fun onPartialResults(partialResults: Bundle?) {
-                        val matches = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                        if (!matches.isNullOrEmpty()) {
-                            // Can broadcast partial transcripts if needed
-                        }
-                    }
+                    override fun onPartialResults(partialResults: Bundle?) {}
 
                     override fun onEvent(eventType: Int, params: Bundle?) {}
                 })
@@ -156,13 +167,14 @@ class SpeechManager(
         } catch (_: Exception) {}
     }
 
-    fun speak(text: String) {
+    fun speak(text: String, voiceName: String = currentVoiceName) {
         if (!isTtsInitialized || tts == null) return
         stopListening()
         stopSpeaking()
+        applyVoiceProfile(voiceName)
 
         val cleanText = text.replace(Regex("[*#_`~]"), "")
-        val utteranceId = "NOVA_${System.currentTimeMillis()}"
+        val utteranceId = "AMANCIPHER_${System.currentTimeMillis()}"
         tts?.speak(cleanText, TextToSpeech.QUEUE_FLUSH, null, utteranceId)
     }
 
@@ -182,7 +194,6 @@ class SpeechManager(
         stopSpeakingWaveAnimation()
         waveSimulationJob = coroutineScope.launch {
             while (isActive && _isSpeaking.value) {
-                // Generate dynamic realistic audio wave pattern
                 val base = 0.45f + (Math.sin(System.currentTimeMillis() / 120.0).toFloat() * 0.35f)
                 val noise = ((Math.random() - 0.5f) * 0.2f).toFloat()
                 _amplitude.value = (base + noise).coerceIn(0.15f, 1.0f)

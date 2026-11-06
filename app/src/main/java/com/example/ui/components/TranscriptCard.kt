@@ -1,6 +1,6 @@
 package com.example.ui.components
 
-import androidx.compose.animation.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,15 +8,20 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
@@ -25,13 +30,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.*
 import com.example.ui.theme.*
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.math.cos
+import kotlin.math.sin
 
 @Composable
 fun TranscriptView(
     messages: List<ChatMessage>,
     assistantName: String,
     onConfirmWhatsApp: (String, String) -> Unit,
-    onConfirmCall: (String) -> Unit,
+    onConfirmCall: (String, Boolean) -> Unit,
     onOpenUrl: (String) -> Unit,
     onToggleNote: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -44,49 +53,108 @@ fun TranscriptView(
         }
     }
 
-    if (messages.isEmpty()) {
-        Box(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(24.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "AWAITING AUDIO INPUT",
-                    color = TextMuted,
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 12.sp,
-                    letterSpacing = 1.5.sp
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Tap the mic below or say 'Hey Nova' to speak",
-                    color = TextIce.copy(alpha = 0.6f),
-                    fontSize = 13.sp
-                )
-            }
-        }
-        return
-    }
-
-    LazyColumn(
-        state = listState,
+    Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        contentPadding = PaddingValues(vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+            .padding(horizontal = 14.dp)
     ) {
-        items(messages, key = { it.id }) { message ->
-            MessageBubble(
-                message = message,
-                assistantName = assistantName,
-                onConfirmWhatsApp = onConfirmWhatsApp,
-                onConfirmCall = onConfirmCall,
-                onOpenUrl = onOpenUrl,
-                onToggleNote = onToggleNote
-            )
+        // Section Title matching Screenshot 4
+        Text(
+            text = "CONVERSATION",
+            color = TextMuted,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+            letterSpacing = 1.6.sp,
+            modifier = Modifier.padding(start = 6.dp, bottom = 6.dp)
+        )
+
+        // Framed Cyber Container with Corner L-Brackets
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(18.dp))
+                .background(Color(0xD9081319))
+                .border(1.dp, CyberCardBorder, RoundedCornerShape(18.dp))
+                .drawWithContent {
+                    drawContent()
+                    val bracketLen = 18.dp.toPx()
+                    val strokeW = 1.8.dp.toPx()
+                    val inset = 8.dp.toPx()
+                    val bracketColor = NeonCyan.copy(alpha = 0.65f)
+
+                    // Top-left L-bracket
+                    drawLine(
+                        color = bracketColor,
+                        start = Offset(inset, inset),
+                        end = Offset(inset + bracketLen, inset),
+                        strokeWidth = strokeW
+                    )
+                    drawLine(
+                        color = bracketColor,
+                        start = Offset(inset, inset),
+                        end = Offset(inset, inset + bracketLen),
+                        strokeWidth = strokeW
+                    )
+
+                    // Top-right L-bracket
+                    drawLine(
+                        color = bracketColor,
+                        start = Offset(size.width - inset - bracketLen, inset),
+                        end = Offset(size.width - inset, inset),
+                        strokeWidth = strokeW
+                    )
+                    drawLine(
+                        color = bracketColor,
+                        start = Offset(size.width - inset, inset),
+                        end = Offset(size.width - inset, inset + bracketLen),
+                        strokeWidth = strokeW
+                    )
+                }
+        ) {
+            if (messages.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "SYSTEM ONLINE // AWAITING COMMAND",
+                            color = TextCyan,
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 12.sp,
+                            letterSpacing = 1.2.sp
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "Tap the glowing mic below or use VISION / HISTORY",
+                            color = TextMuted,
+                            fontSize = 13.sp
+                        )
+                    }
+                }
+            } else {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 12.dp),
+                    contentPadding = PaddingValues(vertical = 14.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    items(messages, key = { it.id }) { message ->
+                        MessageBubble(
+                            message = message,
+                            assistantName = assistantName,
+                            onConfirmWhatsApp = onConfirmWhatsApp,
+                            onConfirmCall = onConfirmCall,
+                            onOpenUrl = onOpenUrl,
+                            onToggleNote = onToggleNote
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -96,96 +164,154 @@ private fun MessageBubble(
     message: ChatMessage,
     assistantName: String,
     onConfirmWhatsApp: (String, String) -> Unit,
-    onConfirmCall: (String) -> Unit,
+    onConfirmCall: (String, Boolean) -> Unit,
     onOpenUrl: (String) -> Unit,
     onToggleNote: (String) -> Unit
 ) {
     val isUser = message.sender == MessageSender.USER
+    val timeStr = remember(message.timestamp) {
+        SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(message.timestamp))
+    }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = if (isUser) Alignment.End else Alignment.Start
     ) {
-        // Tag label
+        // Sender + Timestamp Header matching Screenshot 4 ("You · 20:10:47" / "Amancipher.Ai · 20:10:47")
         Text(
-            text = if (isUser) "YOU" else assistantName,
-            color = if (isUser) TextViolet else TextCyan,
-            fontFamily = FontFamily.Monospace,
-            fontWeight = FontWeight.Bold,
-            fontSize = 10.sp,
-            modifier = Modifier.padding(bottom = 3.dp, start = 4.dp, end = 4.dp)
+            text = if (isUser) "You  ·  $timeStr" else "$assistantName  ·  $timeStr",
+            color = TextMuted,
+            fontSize = 11.sp,
+            modifier = Modifier.padding(
+                bottom = 5.dp,
+                start = if (isUser) 0.dp else 40.dp,
+                end = if (isUser) 40.dp else 0.dp
+            )
         )
 
-        // Glass bubble
-        Box(
-            modifier = Modifier
-                .widthIn(max = 330.dp)
-                .clip(
-                    RoundedCornerShape(
-                        topStart = 16.dp,
-                        topEnd = 16.dp,
-                        bottomStart = if (isUser) 16.dp else 4.dp,
-                        bottomEnd = if (isUser) 4.dp else 16.dp
-                    )
-                )
-                .border(
-                    width = 1.dp,
-                    color = if (isUser) GlassBorderPurple else GlassBorder,
-                    shape = RoundedCornerShape(
-                        topStart = 16.dp,
-                        topEnd = 16.dp,
-                        bottomStart = if (isUser) 16.dp else 4.dp,
-                        bottomEnd = if (isUser) 4.dp else 16.dp
-                    )
-                )
-                .background(if (isUser) Color(0x70201438) else GlassSurface)
-                .padding(horizontal = 14.dp, vertical = 10.dp)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start,
+            verticalAlignment = Alignment.Top
         ) {
-            Column {
-                Text(
-                    text = message.text,
-                    color = TextPrimary,
-                    fontSize = 14.sp,
-                    lineHeight = 20.sp
-                )
+            if (!isUser) {
+                SmallAssistantBadge(modifier = Modifier.size(30.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+            }
 
-                // Interactive Action Cards if attached
-                message.actionCard?.let { card ->
-                    Spacer(modifier = Modifier.height(10.dp))
-                    when (card) {
-                        is ActionCard.WhatsAppConfirm -> {
-                            WhatsAppConfirmationCard(
-                                card = card,
-                                onConfirm = { onConfirmWhatsApp(card.phoneNumber, card.message) }
-                            )
-                        }
-                        is ActionCard.CallConfirm -> {
-                            CallConfirmationCard(
-                                card = card,
-                                onConfirm = { onConfirmCall(card.phoneNumber) }
-                            )
-                        }
-                        is ActionCard.WeatherCard -> {
-                            WeatherInfoCard(card = card)
-                        }
-                        is ActionCard.YouTubePlayerCard -> {
-                            YouTubeActionCard(
-                                card = card,
-                                onOpen = { onOpenUrl(card.videoUrl) }
-                            )
-                        }
-                        is ActionCard.AlarmCard -> {
-                            AlarmInfoCard(card = card)
-                        }
-                        is ActionCard.NoteCard -> {
-                            NoteItemCard(
-                                card = card,
-                                onToggle = { onToggleNote(card.id) }
-                            )
+            // Message Bubble Box
+            Box(
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .widthIn(max = 290.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(
+                        if (isUser) Color(0xFF0E323D) else Color(0xFF101C24)
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = if (isUser) NeonCyan.copy(alpha = 0.55f) else Color(0xFF1D333E),
+                        shape = RoundedCornerShape(14.dp)
+                    )
+                    .padding(horizontal = 14.dp, vertical = 11.dp)
+            ) {
+                Column {
+                    Text(
+                        text = message.text,
+                        color = TextPrimary,
+                        fontSize = 14.5.sp,
+                        lineHeight = 21.sp
+                    )
+
+                    message.actionCard?.let { card ->
+                        Spacer(modifier = Modifier.height(10.dp))
+                        when (card) {
+                            is ActionCard.WhatsAppConfirm -> {
+                                WhatsAppConfirmationCard(
+                                    card = card,
+                                    onConfirm = { onConfirmWhatsApp(card.phoneNumber, card.message) }
+                                )
+                            }
+                            is ActionCard.CallConfirm -> {
+                                CallConfirmationCard(
+                                    card = card,
+                                    onConfirm = { onConfirmCall(card.phoneNumber, card.viaWhatsApp) }
+                                )
+                            }
+                            is ActionCard.WeatherCard -> {
+                                WeatherInfoCard(card = card)
+                            }
+                            is ActionCard.YouTubePlayerCard -> {
+                                YouTubeActionCard(
+                                    card = card,
+                                    onOpen = { onOpenUrl(card.videoUrl) }
+                                )
+                            }
+                            is ActionCard.AlarmCard -> {
+                                AlarmInfoCard(card = card)
+                            }
+                            is ActionCard.NoteCard -> {
+                                NoteItemCard(
+                                    card = card,
+                                    onToggle = { onToggleNote(card.id) }
+                                )
+                            }
+                            is ActionCard.DeviceActionCard -> {
+                                DeviceControlStatusCard(card = card)
+                            }
+                            is ActionCard.ScreenInspectCard -> {
+                                ScreenInspectionResultCard(card = card)
+                            }
                         }
                     }
                 }
             }
+
+            if (isUser) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Box(
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFF102A34))
+                        .border(1.dp, NeonCyan.copy(alpha = 0.6f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Person,
+                        contentDescription = "User",
+                        tint = NeonCyan,
+                        modifier = Modifier.size(17.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SmallAssistantBadge(modifier: Modifier = Modifier) {
+    Canvas(
+        modifier = modifier
+            .clip(CircleShape)
+            .background(Color(0xFF0D222B))
+            .border(1.dp, NeonCyan.copy(alpha = 0.5f), CircleShape)
+    ) {
+        val cx = size.width / 2f
+        val cy = size.height / 2f
+        val dotR = 1.4.dp.toPx()
+        drawCircle(color = NeonCyan, radius = dotR, center = Offset(cx, cy))
+        val ringR = size.minDimension * 0.25f
+        for (i in 0 until 6) {
+            val rad = Math.toRadians(i * 60.0)
+            drawCircle(
+                color = NeonCyan,
+                radius = dotR,
+                center = Offset(
+                    cx + (ringR * cos(rad)).toFloat(),
+                    cy + (ringR * sin(rad)).toFloat()
+                )
+            )
         }
     }
 }
@@ -212,11 +338,11 @@ private fun WhatsAppConfirmationCard(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "CONFIRM WHATSAPP MESSAGE",
+                    text = "WHATSAPP CONFIRMATION POLICY",
                     color = EmeraldGlow,
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 11.sp
+                    fontSize = 10.sp
                 )
             }
             Spacer(modifier = Modifier.height(6.dp))
@@ -247,7 +373,7 @@ private fun WhatsAppConfirmationCard(
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Haan, Bhej Do (WhatsApp)", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                Text("Confirm & Send WhatsApp", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 12.sp)
             }
         }
     }
@@ -269,13 +395,13 @@ private fun CallConfirmationCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Call,
-                    contentDescription = "Phone Call",
+                    contentDescription = "Call",
                     tint = NeonCyan,
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "CONFIRM VOICE CALL",
+                    text = if (card.viaWhatsApp) "CONFIRM WHATSAPP CALL" else "CONFIRM VOICE CALL",
                     color = NeonCyan,
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold,
@@ -303,7 +429,12 @@ private fun CallConfirmationCard(
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Call Milao", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                Text(
+                    text = if (card.viaWhatsApp) "Start WhatsApp Call" else "Call Now",
+                    color = Color.Black,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp
+                )
             }
         }
     }
@@ -314,8 +445,8 @@ private fun WeatherInfoCard(card: ActionCard.WeatherCard) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, GlassBorder, RoundedCornerShape(12.dp)),
-        colors = CardDefaults.cardColors(containerColor = GlassSurfaceLight),
+            .border(1.dp, CyberCardBorder, RoundedCornerShape(12.dp)),
+        colors = CardDefaults.cardColors(containerColor = CyberCardSurface),
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
@@ -345,16 +476,8 @@ private fun WeatherInfoCard(card: ActionCard.WeatherCard) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = "💧 Humidity: ${card.humidity}%",
-                    color = TextMuted,
-                    fontSize = 11.sp
-                )
-                Text(
-                    text = "💨 Wind: ${card.windSpeed.toInt()} km/h",
-                    color = TextMuted,
-                    fontSize = 11.sp
-                )
+                Text(text = "💧 Humidity: ${card.humidity}%", color = TextMuted, fontSize = 11.sp)
+                Text(text = "💨 Wind: ${card.windSpeed.toInt()} km/h", color = TextMuted, fontSize = 11.sp)
             }
         }
     }
@@ -368,8 +491,8 @@ private fun YouTubeActionCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, NeonPink.copy(alpha = 0.5f), RoundedCornerShape(12.dp)),
-        colors = CardDefaults.cardColors(containerColor = Color(0x604C0519)),
+            .border(1.dp, NeonCyan.copy(alpha = 0.5f), RoundedCornerShape(12.dp)),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF0D212A)),
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
@@ -377,13 +500,13 @@ private fun YouTubeActionCard(
                 Icon(
                     imageVector = Icons.Default.PlayCircle,
                     contentDescription = "YouTube",
-                    tint = NeonPink,
+                    tint = NeonCyan,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "YOUTUBE PLAYER",
-                    color = NeonPink,
+                    text = "YOUTUBE AUTOMATION",
+                    color = NeonCyan,
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold,
                     fontSize = 11.sp
@@ -397,11 +520,11 @@ private fun YouTubeActionCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag("open_youtube_button"),
-                colors = ButtonDefaults.buttonColors(containerColor = NeonPink)
+                colors = ButtonDefaults.buttonColors(containerColor = NeonCyan)
             ) {
-                Icon(imageVector = Icons.Default.PlayArrow, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                Icon(imageVector = Icons.Default.PlayArrow, contentDescription = null, tint = Color.Black, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Play in YouTube", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                Text("Play in YouTube", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 12.sp)
             }
         }
     }
@@ -430,12 +553,7 @@ private fun AlarmInfoCard(card: ActionCard.AlarmCard) {
             )
             Spacer(modifier = Modifier.width(10.dp))
             Column {
-                Text(
-                    text = card.time,
-                    color = AmberGlow,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
+                Text(text = card.time, color = AmberGlow, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 Text(text = card.label, color = TextIce, fontSize = 12.sp)
             }
         }
@@ -450,8 +568,8 @@ private fun NoteItemCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, GlassBorder, RoundedCornerShape(12.dp)),
-        colors = CardDefaults.cardColors(containerColor = GlassSurfaceLight),
+            .border(1.dp, CyberCardBorder, RoundedCornerShape(12.dp)),
+        colors = CardDefaults.cardColors(containerColor = CyberCardSurface),
         shape = RoundedCornerShape(12.dp)
     ) {
         Row(
@@ -473,6 +591,79 @@ private fun NoteItemCard(
                 fontSize = 13.sp,
                 modifier = Modifier.weight(1f)
             )
+        }
+    }
+}
+
+@Composable
+private fun DeviceControlStatusCard(card: ActionCard.DeviceActionCard) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, NeonCyan.copy(alpha = 0.45f), RoundedCornerShape(12.dp)),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF0B2129)),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(modifier = Modifier.padding(10.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = card.actionTitle,
+                    color = NeonCyan,
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 10.sp
+                )
+                Text(
+                    text = "● ${card.statusText}",
+                    color = EmeraldGlow,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = card.detail,
+                color = TextPrimary,
+                fontSize = 12.5.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun ScreenInspectionResultCard(card: ActionCard.ScreenInspectCard) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, NeonCyan.copy(alpha = 0.5f), RoundedCornerShape(12.dp)),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF0A1E26)),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(modifier = Modifier.padding(10.dp)) {
+            Text(
+                text = "SCREEN INSPECTOR // ${card.elementCount} NODES",
+                color = NeonCyan,
+                fontFamily = FontFamily.Monospace,
+                fontWeight = FontWeight.Bold,
+                fontSize = 10.sp
+            )
+            Text(
+                text = "Package: ${card.activePackage}",
+                color = TextMuted,
+                fontSize = 10.sp
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            card.summary.forEach { item ->
+                Text(
+                    text = "• $item",
+                    color = TextIce,
+                    fontSize = 12.sp
+                )
+            }
         }
     }
 }
