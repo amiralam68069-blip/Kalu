@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">NOVA</string>
+    <string name="nova_standby">STANDBY // READY</string>
+    <string name="nova_listening">LISTENING...</string>
+    <string name="nova_thinking">PROCESSING INTENT...</string>
+    <string name="nova_speaking">TRANSMITTING AUDIO...</string>
+    <string name="tap_to_speak">Tap to speak</string>
+    <string name="tap_to_stop">Tap to interrupt</string>
+</resources>
